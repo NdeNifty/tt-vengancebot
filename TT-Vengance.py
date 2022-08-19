@@ -65,11 +65,13 @@ punterharmmer = "//button[text()[normalize-space()='place a bet']]"
 
 # Get account balance
 account_balance = bot.find_element(by=By.CLASS_NAME, value=balance)
-logging.info('Acccount balance is :' + account_balance.text)
+logging.info('Account balance is :' + account_balance.text)
 
 #obtain parent window handle
 parent = bot.window_handles[0]
 
+# Dictionary to store games details
+GamesList = []
 # The betting function
 def placebet():
     betbutton = bot.find_element(by=By.XPATH, value="//button[text()[normalize-space()='place a bet']]")
@@ -103,19 +105,8 @@ def placebet():
     logging.info('Bet placed succesfully with stake: ' + stakestake + ' CFA')
 
 
-# Analyse Statistics
-# def analysis_algorithm():
-#     logging.info('opened the analysis algorithm')
-#     #statsdropdownxpath = "(//button[@class='c-events__toggle-statistics'])[2]"
-#     #statslinkxpath = "(//span[@class='c-events-statistics__title'])[1]"
-#     statsdropdown = bot.find_element(by=By.XPATH, value="(//button[@class='c-events__toggle-statistics'])[2]")
-#     statslink = bot.find_element(by=By.XPATH, value="(//span[@class='c-events-statistics__title'])[1]")
-#
-#     statsdropdown.click()
-#     statslink.click()
-#     logging.info('Stats link opened')
 
-# select Pro League
+# Pro League First Game function
 def proleague():
     # Click on sports link
     open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
@@ -133,56 +124,85 @@ def proleague():
     logging.info('Clicked Search')
 
     try:
-        # open_pro_league = bot.find_element(by=By.XPATH, value=proleaguelink)
-        open_pro_league = WebDriverWait(bot, 5).until(ec.presence_of_element_located((By.XPATH, proleaguelink)))
-        # open_pro_league = bot.find_element(by=By.XPATH, value="//a[@href='line/table-tennis/1197285-tt-cup']")
+        # open Pro League Tournament
+        open_pro_league = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, proleaguelink)))
         open_pro_league.click()
+        logging.info('Pro League Found and Opened')
     except:
-        # open_pro_league = bot.find_element(by=By.XPATH, value=proleaguelink)
-        open_pro_league = WebDriverWait(bot, 5).until(ec.presence_of_element_located((By.XPATH, proleaguelink)))
-        # open_pro_league = bot.find_element(by=By.XPATH, value="//a[@href='line/table-tennis/1197285-tt-cup']")
-        open_pro_league.click()
-    logging.info('This Point')
+        logging.info("Pro League Tournament not found !!!!!!")
+        logging.info("Skipping to TT Cup..........................")
+        print("Pro League Tournament not found !!!!!!")
+        print("Skipping to TT Cup..........................")
+        ttcup()
+
 
     # Select First game
-    first_pro_league_game = bot.find_element(by=By.XPATH, value="(//a[@data-liga='1691055'])[1]")
-    # first_pro_league_game = bot.find_element(by=By.XPATH, value="(//a[@data-liga='1197285'])[1]")
+    first_pro_league_gamexPath = "(//a[@data-liga='1691055'])[1]"
+    first_pro_league_game = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, first_pro_league_gamexPath)))
 
     first_pro_league_game.click()
     logging.info('First Pro league game opened')
-
-    # # Store iframe element
-    # iframegameboard = bot.find_element(by=By.XPATH, value="//div[@class='st-integration']//iframe[1]")
-
-    # # Go to iframe
-    # bot.switch_to.frame(iframegameboard)
+    print('First Pro league game opened')
 
     league = bot.find_element(by=By.XPATH, value=leaguename)
-    # team1 = WebDriverWait(bot, 3).until(ec.visibility_of_element_located((By.XPATH, "/html/body/div[3]/div[1]/div[2]/div/div/div[3]/div/div/div/div[1]/div/div/div[1]/div/div/div[2]/div/div[1]/div/div[2]")))
 
-    # team1 = bot.find_element(by=By.XPATH, value="(//div[@class='team']//a)[1]")
-    # team2 = bot.find_element(by=By.XPATH, value="(//div[@class='team'])[2]")
-    # gametitle = team1.text + ' vs ' + team2.text
-    # gametime = bot.find_element(by=By.XPATH, value="(//div[@class='time']//div)[2]")
+    team1Xpath = "(//div[@class='team']//a)[1]"
+    team2Xpath = "(//div[@class='team'])[2]"
+    gametimeXpath = "(//div[@class='time']//div)[2]"
+    team1 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team1Xpath)))
+    team2 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team2Xpath)))
+    gametime = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, gametimeXpath)))
+
+
+    # Dictionary to hold game details
+    gamedetails ={ }
+    gamedetails["team1"] = team1
+    gamedetails["team2"] = team2
+    gamedetails["gametime"] = gametime
+
+    # Check GameList if the game has been analysed before
+    if gamedetails in GamesList:
+        # Go to next game
+        logging.info("This game has been analysed already!!!!!")
+        logging.info("Skipping to the next Pro league game..............")
+        print("This game has been analysed already !!!!!")
+        print("Skipping to the next Pro league game..............")
+        # Click on sports link
+        open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+        open_sports.click()
+        logging.info('Clicked Sports')
+
+        # click on table tennis
+        open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+        open_tt.click()
+        logging.info('Clicked Table Tennis')
+        proleague2()
+    else:
+        # Add Game details to the Bet list
+        GamesList.append(gamedetails)
+        logging.info("The game details have been added to the Analysed List")
+        print("The game details have been added to the analysed list")
+
+
+
+
     logging.info('League :' + league.text)
 
-    team1odds = WebDriverWait(bot, 4).until(ec.visibility_of_element_located((By.XPATH, teamoneodds)))
+    team1odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamoneodds)))
     logging.info('Team 1 odds:' + team1odds.text)
-    team2odds = WebDriverWait(bot, 2).until(ec.visibility_of_element_located((By.XPATH, teamtwoodds)))
+    team2odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamtwoodds)))
     logging.info('Team 2 odds:' + team2odds.text)
-    # team1odds = bot.find_element(by=By.XPATH, value="(//span[@class='koeff'])[1]")
-    # team2odds = bot.find_element(by=By.XPATH, value="(//span[@class='koeff'])[2]")
-    # logging.info('Team 1 odds:'+ team2odds.text)
+
     statsdropdown = bot.find_element(by=By.XPATH, value="(//button[@title='Statistics'])[1]")
     statslink = bot.find_element(by=By.XPATH, value="//button[@title='Statistics']//span[1]")
+
+
 
     try:
         clickmarket = bot.find_element(by=By.XPATH, value=market)
         if (float(team1odds.text) >= 1.28 and float(team2odds.text) >= 1.28):
 
             logging.info('Favorable bet found')
-            # clickmarket.location_once_scrolled_into_view
-            # bot.execute_script("return arguments[0].scrollIntoView();", clickmarket)
 
             statsdropdown.click()
             statslink.click()
@@ -192,16 +212,73 @@ def proleague():
             bot.switch_to.window(statswindow)
             print("Stats window opened")
 
-            # Go to iframe
-            #iframestatspage = bot.find_element(by=By.XPATH, value="//div[@class='st-integration st-integration--full-screen']//iframe[1]")
-            WebDriverWait(bot, 15).until(ec.frame_to_be_available_and_switch_to_it((By.XPATH, "//div[@class='st-integration st-integration--full-screen']//iframe[1]")))
+            WebDriverWait(bot, 20).until(ec.frame_to_be_available_and_switch_to_it((By.XPATH, "//iframe[contains(@class,'st-portal st-integration__portal')]")))
+            h2hclick1 = WebDriverWait(bot, 30).until(ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+
             print("Accessed iframe and ready to collect statistics")
             # Click head to head
+            get_title = bot.title
+            print("The title is : " + get_title)
 
-            h2hlink = bot.find_element(by=By.XPATH, value="/html/body/div[1]/div/div/div/div[1]/div[2]/div[2]/a[2]/divx ")
-            h2hlink.click()
-            print("head to head opened")
-            scores = bot.find_elements()
+            h2hlink = bot.find_element(by=By.XPATH, value="/html/body/div/div/div/div/div[1]/div[2]/div[2]/a[2]")
+
+            try:
+                WebDriverWait(bot, 30).until(ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+                h2hclick1.click()
+                someclick = WebDriverWait(bot, 30).until(ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+                someclick.click()
+                # Double click if the first click did not respond
+                action = ActionChains(bot)
+                action.double_click(h2hlink).perform()
+                h2hlink.click()
+            except:
+                h2hclick1.click()
+                h2hlink.click()
+                print("h2h link clicked twice")
+
+            print("toogle head to head opened")
+
+            scoresList =[]
+            scores = WebDriverWait(bot, 20).until(ec.presence_of_all_elements_located((By.CLASS_NAME, "st-score__value")))
+            # scores = bot.find_elements(by=By.CLASS_NAME, value="st-score__value")
+            for score in scores:
+                print("Score: " + score.text)
+                scoresList.append(score.text)
+            print("The scorelist is :")
+            print(scoresList)
+            logging.info(scoresList)
+
+            # Bet Analysis Variables
+            totalscores = len(scoresList)
+            zeros = scoresList.count('0')
+            zerostreshold = 100 * zeros/totalscores
+
+            if totalscores < 3:
+                print("Not enough statistics for analysis. The bot will proceed to the next league")
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                logging.info('odds not favorable')
+                logging.info('Going to the next game')
+                print('odds not favorable')
+                print('Going to the next game')
+                # Click on sports link
+                open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+                open_sports.click()
+                logging.info('Clicked Sports')
+
+                # click on table tennis
+                open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+                open_tt.click()
+                logging.info('Clicked Table Tennis')
+                proleague2()
+
+            elif 2.9 < totalscores and zerostreshold < 25 :
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                # bot.switch_to.default_content()
+
 
             # Scroll market to center of page
             desired_y = (clickmarket.size['height'] / 2) + clickmarket.location['y']
@@ -213,6 +290,230 @@ def proleague():
             scroll.move_to_element(clickmarket).perform()
             # clickmarket.click()
             # logging.info('Market added to betslip')
+            # Go to place bet function
+            # placebet()
+
+            logging.info('Pro league Bet placed.......................!')
+            bot.refresh()
+            logging.info("Page refreshed")
+            # Click on sports link
+            open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+            open_sports.click()
+            logging.info('Clicked Sports')
+
+            # click on table tennis
+            open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+            open_tt.click()
+            logging.info('Clicked Table Tennis')
+            proleague2()
+        else:
+
+            logging.info('odds not favorable')
+            logging.info('Going to the next game')
+            # Click on sports link
+            open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+            open_sports.click()
+            logging.info('Clicked Sports')
+
+            # click on table tennis
+            open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+            open_tt.click()
+            logging.info('Clicked Table Tennis')
+            proleague2()
+    except NoSuchElementException:
+        logging.info('Over 3.5 Market not found. Going to next game')
+        # Click on sports link
+        open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+        open_sports.click()
+        logging.info('Clicked Sports')
+
+        # click on table tennis
+        open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+        open_tt.click()
+        logging.info('Clicked Table Tennis')
+        proleague2()
+
+
+# Pro League second Game function
+def proleague2():
+    # Click on sports link
+    open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+    open_sports.click()
+    logging.info('Clicked Sports')
+
+    # click on table tennis
+    open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+    open_tt.click()
+    logging.info('Clicked Table Tennis')
+
+    # go to search to quit dropdown
+    go_to_search = bot.find_element(by=By.CLASS_NAME, value=searchfield)
+    go_to_search.click()
+    logging.info('Clicked Search')
+
+    try:
+        # open Pro League Tournament
+        open_pro_league = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, proleaguelink)))
+        open_pro_league.click()
+    except:
+        logging.info("Pro League Tournament not found !!!!!!")
+        logging.info("Skipping to TT Cup..........................")
+        print("Pro League Tournament not found !!!!!!")
+        print("Skipping to TT Cup..........................")
+        ttcup()
+    logging.info('This Point')
+
+    # Select Second game
+    second_pro_league_gamexPath = "(//a[@data-liga='1691055'])[2]"
+    second_pro_league_game = WebDriverWait(bot, 30).until(
+        ec.presence_of_element_located((By.XPATH, second_pro_league_gamexPath)))
+
+    second_pro_league_game.click()
+    logging.info('Second Pro league game opened')
+    print('Second Pro league game opened')
+
+    league = bot.find_element(by=By.XPATH, value=leaguename)
+
+    team1Xpath = "(//div[@class='team']//a)[1]"
+    team2Xpath = "(//div[@class='team'])[2]"
+    gametimeXpath = "(//div[@class='time']//div)[2]"
+    team1 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team1Xpath)))
+    team2 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team2Xpath)))
+    gametime = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, gametimeXpath)))
+
+    # Dictionary to hold game details
+    gamedetails = {}
+    gamedetails["team1"] = team1
+    gamedetails["team2"] = team2
+    gamedetails["gametime"] = gametime
+
+    # Check GameList if the game has been analysed before
+    if gamedetails in GamesList:
+        # Go to next game
+        logging.info("This game has been analysed already!!!!!")
+        logging.info("Skipping to the next game..............")
+        print("This game has been analysed already !!!!!")
+        print("Skipping to the next game..............")
+        # Click on sports link
+        open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+        open_sports.click()
+        logging.info('Clicked Sports')
+
+        # click on table tennis
+        open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+        open_tt.click()
+        logging.info('Clicked Table Tennis')
+        ttcup()
+    else:
+        # Add Game details to the Bet list
+        GamesList.append(gamedetails)
+        logging.info("The game details have been added to the Analysed List")
+        print("The game details have been added to the analysed list")
+
+    logging.info('League :' + league.text)
+
+    team1odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamoneodds)))
+    logging.info('Team 1 odds:' + team1odds.text)
+    team2odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamtwoodds)))
+    logging.info('Team 2 odds:' + team2odds.text)
+
+    statsdropdown = bot.find_element(by=By.XPATH, value="(//button[@title='Statistics'])[1]")
+    statslink = bot.find_element(by=By.XPATH, value="//button[@title='Statistics']//span[1]")
+
+    try:
+        clickmarket = bot.find_element(by=By.XPATH, value=market)
+        if (float(team1odds.text) >= 1.28 and float(team2odds.text) >= 1.28):
+
+            logging.info('Favorable bet found')
+
+            statsdropdown.click()
+            statslink.click()
+            logging.info('Stats link clicked')
+            # ObtainWindow handle for stats window
+            statswindow = bot.window_handles[1]
+            bot.switch_to.window(statswindow)
+            print("Stats window opened")
+
+            WebDriverWait(bot, 20).until(ec.frame_to_be_available_and_switch_to_it(
+                (By.XPATH, "//iframe[contains(@class,'st-portal st-integration__portal')]")))
+            h2hclick1 = WebDriverWait(bot, 20).until(
+                ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+
+            print("Accessed iframe and ready to collect statistics")
+            # Click head to head
+            get_title = bot.title
+            print("The title is : " + get_title)
+
+            h2hlink = bot.find_element(by=By.XPATH, value="/html/body/div/div/div/div/div[1]/div[2]/div[2]/a[2]")
+
+            try:
+                WebDriverWait(bot, 20).until(
+                    ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+                h2hclick1.click()
+                # Double click if the first click did not respond
+                action = ActionChains(bot)
+                action.double_click(h2hlink).perform()
+                h2hlink.click()
+            except:
+                h2hclick1.click()
+                h2hlink.click()
+                print("h2h link clicked twice")
+
+            print("toogle head to head opened")
+
+            scoresList = []
+            scores = WebDriverWait(bot, 20).until(
+                ec.presence_of_all_elements_located((By.CLASS_NAME, "st-score__value")))
+            # scores = bot.find_elements(by=By.CLASS_NAME, value="st-score__value")
+            for score in scores:
+                print("Score: " + score.text)
+                scoresList.append(score.text)
+            print("The scorelist is :")
+            print(scoresList)
+            logging.info(scoresList)
+
+            # Bet Analysis Variables
+            totalscores = len(scoresList)
+            zeros = scoresList.count('0')
+            zerostreshold = 100 * zeros / totalscores
+
+            if totalscores < 3:
+                print("Not enough statistics for analysis. The bot will proceed to the next league")
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                logging.info('odds not favorable')
+                logging.info('Going to the next game')
+                print('odds not favorable')
+                print('Going to the next game')
+                # Click on sports link
+                open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+                open_sports.click()
+                logging.info('Clicked Sports')
+
+                # click on table tennis
+                open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+                open_tt.click()
+                logging.info('Clicked Table Tennis')
+                ttcup()
+
+            elif 2.9 < totalscores and zerostreshold < 25:
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                # bot.switch_to.default_content()
+
+            # Scroll market to center of page
+            desired_y = (clickmarket.size['height'] / 2) + clickmarket.location['y']
+            current_y = (bot.execute_script('return window.innerHeight') / 2) + bot.execute_script(
+                'return window.pageYOffset')
+            scroll_y_by = desired_y - current_y
+            bot.execute_script("window.scrollBy(0, arguments[0]);", scroll_y_by)
+            scroll = ActionChains(bot)
+            scroll.move_to_element(clickmarket).perform()
+            # clickmarket.click()
+            # logging.info('Market added to betslip')
+            # Go to place bet function
             # placebet()
 
             logging.info('Pro league Bet placed.......................!')
@@ -255,69 +556,171 @@ def proleague():
         logging.info('Clicked Table Tennis')
         ttcup()
 
-
-# TT-Cup function 
+# TT-Cup First Game function
 def ttcup():
+    # Click on sports link
+    open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+    open_sports.click()
+    logging.info('Clicked Sports')
+
+    # click on table tennis
+    open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+    open_tt.click()
+    logging.info('Clicked Table Tennis')
+
     # go to search to quit dropdown
     go_to_search = bot.find_element(by=By.CLASS_NAME, value=searchfield)
     go_to_search.click()
     logging.info('Clicked Search')
+
     try:
-        # select Pro TT-Cup
-        # open_tt_cup = bot.find_element(by=By.XPATH, value=ttcuplink)
-        open_tt_cup = WebDriverWait(bot, 8).until(ec.presence_of_element_located((By.XPATH, ttcuplink)))
-    # open_pro_league = bot.find_element(by=By.XPATH, value="//a[@href='line/table-tennis/1197285-tt-cup']")
+        # open Pro League Tournament
+        open_tt_cup = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, ttcuplink)))
+        open_tt_cup.click()
     except:
-        try:
-            open_tt_cup = WebDriverWait(bot, 8).until(ec.presence_of_element_located((By.XPATH, ttcuplink)))
-            open_tt_cup.click()
-        except:
-            setkacup()
-    logging.info('This Point')
+        logging.info("TT-Cup Tournament not found !!!!!!")
+        logging.info("Skipping to Setka Cup..........................")
+        print("TT-Cup Tournament not found !!!!!!")
+        print("Skipping to Setka Cup..........................")
+        setkacup()
 
     # Select First game
-    first_tt_cup = bot.find_element(by=By.XPATH, value="(//a[@data-liga='1197285'])[1]")
-    # first_pro_league_game = bot.find_element(by=By.XPATH, value="(//a[@data-liga='1197285'])[1]")
+    first_tt_cup_gamexPath = "(//a[@data-liga='1197285'])[1]"
+    first_tt_cup_game = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, first_tt_cup_gamexPath)))
 
-    first_tt_cup.click()
-    logging.info('First TT- Cup game opened')
-
-    # # Store iframe element
-    # iframegameboard = bot.find_element(by=By.XPATH, value="//div[@class='st-integration']//iframe[1]")
-
-    # # Go to iframe
-    # bot.switch_to.frame(iframegameboard)
+    first_tt_cup_game.click()
+    logging.info('First Pro league game opened')
+    print('First Pro league game opened')
 
     league = bot.find_element(by=By.XPATH, value=leaguename)
-    # team1 = WebDriverWait(bot, 3).until(ec.visibility_of_element_located((By.XPATH, "/html/body/div[3]/div[1]/div[2]/div/div/div[3]/div/div/div/div[1]/div/div/div[1]/div/div/div[2]/div/div[1]/div/div[2]")))
 
-    # team1 = bot.find_element(by=By.XPATH, value="(//div[@class='team']//a)[1]")
-    # team2 = bot.find_element(by=By.XPATH, value="(//div[@class='team'])[2]")
-    # gametitle = team1.text + ' vs ' + team2.text
-    # gametime = bot.find_element(by=By.XPATH, value="(//div[@class='time']//div)[2]")
+    team1Xpath = "(//div[@class='team']//a)[1]"
+    team2Xpath = "(//div[@class='team'])[2]"
+    gametimeXpath = "(//div[@class='time']//div)[2]"
+    team1 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team1Xpath)))
+    team2 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team2Xpath)))
+    gametime = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, gametimeXpath)))
+
+    # Dictionary to hold game details
+    gamedetails = {}
+    gamedetails["team1"] = team1
+    gamedetails["team2"] = team2
+    gamedetails["gametime"] = gametime
+
+    # Check GameList if the game has been analysed before
+    if gamedetails in GamesList:
+        # Go to next game
+        logging.info("This game has been analysed already!!!!!")
+        logging.info("Skipping to the next TT Cup game..............")
+        print("This game has been analysed already !!!!!")
+        print("Skipping to the next TT Cup game..............")
+        # Click on sports link
+        open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+        open_sports.click()
+        logging.info('Clicked Sports')
+
+        # click on table tennis
+        open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+        open_tt.click()
+        logging.info('Clicked Table Tennis')
+        ttcup2()
+    else:
+        # Add Game details to the Bet list
+        GamesList.append(gamedetails)
+        logging.info("The game details have been added to the Analysed List")
+        print("The game details have been added to the analysed list")
+
     logging.info('League :' + league.text)
-    # logging.info('Game : ' + team1.text + ' - ' + team2.text)
-    # logging.info('Game Time : ' + gametime.text)
 
-    team1odds = WebDriverWait(bot, 2).until(ec.visibility_of_element_located((By.XPATH, teamoneodds)))
+    team1odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamoneodds)))
     logging.info('Team 1 odds:' + team1odds.text)
-    team2odds = WebDriverWait(bot, 1).until(ec.visibility_of_element_located((By.XPATH, teamtwoodds)))
+    team2odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamtwoodds)))
     logging.info('Team 2 odds:' + team2odds.text)
-    # team1odds = bot.find_element(by=By.XPATH, value="(//span[@class='koeff'])[1]")
-    # team2odds = bot.find_element(by=By.XPATH, value="(//span[@class='koeff'])[2]")
-    # logging.info('Team 1 odds:'+ team2odds.text)
+
     statsdropdown = bot.find_element(by=By.XPATH, value="(//button[@title='Statistics'])[1]")
     statslink = bot.find_element(by=By.XPATH, value="//button[@title='Statistics']//span[1]")
 
     try:
         clickmarket = bot.find_element(by=By.XPATH, value=market)
-        if float(team1odds.text) >= 1.28 and float(team2odds.text) >= 1.28:
+        if (float(team1odds.text) >= 1.28 and float(team2odds.text) >= 1.28):
+
             logging.info('Favorable bet found')
-            # clickmarket.location_once_scrolled_into_view
-            # bot.execute_script("return arguments[0].scrollIntoView();", clickmarket)
+
             statsdropdown.click()
             statslink.click()
             logging.info('Stats link clicked')
+            # ObtainWindow handle for stats window
+            statswindow = bot.window_handles[1]
+            bot.switch_to.window(statswindow)
+            print("Stats window opened")
+
+            WebDriverWait(bot, 20).until(ec.frame_to_be_available_and_switch_to_it(
+                (By.XPATH, "//iframe[contains(@class,'st-portal st-integration__portal')]")))
+            h2hclick1 = WebDriverWait(bot, 20).until(
+                ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+
+            print("Accessed iframe and ready to collect statistics")
+            # Click head to head
+            get_title = bot.title
+            print("The title is : " + get_title)
+
+            h2hlink = bot.find_element(by=By.XPATH, value="/html/body/div/div/div/div/div[1]/div[2]/div[2]/a[2]")
+
+            try:
+                WebDriverWait(bot, 20).until(ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+                h2hclick1.click()
+                # Double click if the first click did not respond
+                action = ActionChains(bot)
+                action.double_click(h2hlink).perform()
+                h2hlink.click()
+            except:
+                h2hclick1.click()
+                h2hlink.click()
+                print("h2h link clicked twice")
+
+            print("toogle head to head opened")
+
+            scoresList = []
+            scores = WebDriverWait(bot, 20).until(ec.presence_of_all_elements_located((By.CLASS_NAME, "st-score__value")))
+            # scores = bot.find_elements(by=By.CLASS_NAME, value="st-score__value")
+            for score in scores:
+                print("Score: " + score.text)
+                scoresList.append(score.text)
+            print("The scorelist is :")
+            print(scoresList)
+            logging.info(scoresList)
+
+            # Bet Analysis Variables
+            totalscores = len(scoresList)
+            zeros = scoresList.count('0')
+            zerostreshold = 100 * zeros / totalscores
+
+            if totalscores < 3:
+                print("Not enough statistics for analysis. The bot will proceed to the next league")
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                logging.info('odds not favorable')
+                logging.info('Going to the next game')
+                print('odds not favorable')
+                print('Going to the next game')
+                # Click on sports link
+                open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+                open_sports.click()
+                logging.info('Clicked Sports')
+
+                # click on table tennis
+                open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+                open_tt.click()
+                logging.info('Clicked Table Tennis')
+                ttcup2()
+
+            elif 2.9 < totalscores and zerostreshold < 25:
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                # bot.switch_to.default_content()
+
             # Scroll market to center of page
             desired_y = (clickmarket.size['height'] / 2) + clickmarket.location['y']
             current_y = (bot.execute_script('return window.innerHeight') / 2) + bot.execute_script(
@@ -328,9 +731,231 @@ def ttcup():
             scroll.move_to_element(clickmarket).perform()
             # clickmarket.click()
             # logging.info('Market added to betslip')
+            # Go to place bet function
             # placebet()
 
-            logging.info('TT Cup Bet placed.......................!')
+            logging.info('Pro league Bet placed.......................!')
+            bot.refresh()
+            logging.info("Page refreshed")
+            # Click on sports link
+            open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+            open_sports.click()
+            logging.info('Clicked Sports')
+
+            # click on table tennis
+            open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+            open_tt.click()
+            logging.info('Clicked Table Tennis')
+            ttcup2()
+        else:
+
+            logging.info('odds not favorable')
+            logging.info('Going to the next game')
+            # Click on sports link
+            open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+            open_sports.click()
+            logging.info('Clicked Sports')
+
+            # click on table tennis
+            open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+            open_tt.click()
+            logging.info('Clicked Table Tennis')
+            ttcup2()
+    except NoSuchElementException:
+        logging.info('Over 3.5 Market not found. Going to next game')
+        # Click on sports link
+        open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+        open_sports.click()
+        logging.info('Clicked Sports')
+
+        # click on table tennis
+        open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+        open_tt.click()
+        logging.info('Clicked Table Tennis')
+        ttcup2()
+
+# TT-Cup Second Game function
+def ttcup2():
+    # Click on sports link
+    open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+    open_sports.click()
+    logging.info('Clicked Sports')
+
+    # click on table tennis
+    open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+    open_tt.click()
+    logging.info('Clicked Table Tennis')
+
+    # go to search to quit dropdown
+    go_to_search = bot.find_element(by=By.CLASS_NAME, value=searchfield)
+    go_to_search.click()
+    logging.info('Clicked Search')
+
+    try:
+        # open Pro League Tournament
+        open_pro_league = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, proleaguelink)))
+        open_pro_league.click()
+    except:
+        logging.info("TT-Cup Tournament not found !!!!!!")
+        logging.info("Skipping to Setka Cup..........................")
+        print("TT-Cup Tournament not found !!!!!!")
+        print("Skipping to Setka Cup..........................")
+        setkacup()
+    logging.info('This Point')
+
+    # Select Second game
+    second_tt_cup_gamexPath = "(//a[@data-liga='1197285'])[2]"
+    second_tt_cup_game = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, second_tt_cup_gamexPath)))
+
+    second_tt_cup_game.click()
+    logging.info('Second TT-Cup Cup game opened')
+    print('Second TT-Cup Cup game opened')
+
+    league = bot.find_element(by=By.XPATH, value=leaguename)
+
+    team1Xpath = "(//div[@class='team']//a)[1]"
+    team2Xpath = "(//div[@class='team'])[2]"
+    gametimeXpath = "(//div[@class='time']//div)[2]"
+    team1 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team1Xpath)))
+    team2 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team2Xpath)))
+    gametime = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, gametimeXpath)))
+
+    # Dictionary to hold game details
+    gamedetails = {}
+    gamedetails["team1"] = team1
+    gamedetails["team2"] = team2
+    gamedetails["gametime"] = gametime
+
+    # Check GameList if the game has been analysed before
+    if gamedetails in GamesList:
+        # Go to next game
+        logging.info("This game has been analysed already!!!!!")
+        logging.info("Skipping to the next game..............")
+        print("This game has been analysed already !!!!!")
+        print("Skipping to the next game..............")
+        # Click on sports link
+        open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+        open_sports.click()
+        logging.info('Clicked Sports')
+
+        # click on table tennis
+        open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+        open_tt.click()
+        logging.info('Clicked Table Tennis')
+        setkacup()
+    else:
+        # Add Game details to the Bet list
+        GamesList.append(gamedetails)
+        logging.info("The game details have been added to the Analysed List")
+        print("The game details have been added to the analysed list")
+
+    logging.info('League :' + league.text)
+
+    team1odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamoneodds)))
+    logging.info('Team 1 odds:' + team1odds.text)
+    team2odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamtwoodds)))
+    logging.info('Team 2 odds:' + team2odds.text)
+
+    statsdropdown = bot.find_element(by=By.XPATH, value="(//button[@title='Statistics'])[1]")
+    statslink = bot.find_element(by=By.XPATH, value="//button[@title='Statistics']//span[1]")
+
+    try:
+        clickmarket = bot.find_element(by=By.XPATH, value=market)
+        if (float(team1odds.text) >= 1.28 and float(team2odds.text) >= 1.28):
+
+            logging.info('Favorable bet found')
+
+            statsdropdown.click()
+            statslink.click()
+            logging.info('Stats link clicked')
+            # ObtainWindow handle for stats window
+            statswindow = bot.window_handles[1]
+            bot.switch_to.window(statswindow)
+            print("Stats window opened")
+
+            WebDriverWait(bot, 20).until(ec.frame_to_be_available_and_switch_to_it(
+                (By.XPATH, "//iframe[contains(@class,'st-portal st-integration__portal')]")))
+            h2hclick1 = WebDriverWait(bot, 20).until(
+                ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+
+            print("Accessed iframe and ready to collect statistics")
+            # Click head to head
+            get_title = bot.title
+            print("The title is : " + get_title)
+
+            h2hlink = bot.find_element(by=By.XPATH, value="/html/body/div/div/div/div/div[1]/div[2]/div[2]/a[2]")
+
+            try:
+                WebDriverWait(bot, 20).until(
+                    ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+                h2hclick1.click()
+                # Double click if the first click did not respond
+                action = ActionChains(bot)
+                action.double_click(h2hlink).perform()
+                h2hlink.click()
+            except:
+                h2hclick1.click()
+                h2hlink.click()
+                print("h2h link clicked twice")
+
+            print("toogle head to head opened")
+
+            scoresList = []
+            scores = WebDriverWait(bot, 20).until(
+                ec.presence_of_all_elements_located((By.CLASS_NAME, "st-score__value")))
+            # scores = bot.find_elements(by=By.CLASS_NAME, value="st-score__value")
+            for score in scores:
+                print("Score: " + score.text)
+                scoresList.append(score.text)
+            print("The scorelist is :")
+            print(scoresList)
+            logging.info(scoresList)
+
+            # Bet Analysis Variables
+            totalscores = len(scoresList)
+            zeros = scoresList.count('0')
+            zerostreshold = 100 * zeros / totalscores
+
+            if totalscores < 3:
+                print("Not enough statistics for analysis. The bot will proceed to the next league")
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                logging.info('odds not favorable')
+                logging.info('Going to the next game')
+                print('odds not favorable')
+                print('Going to the next game')
+                # Click on sports link
+                open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+                open_sports.click()
+                logging.info('Clicked Sports')
+
+                # click on table tennis
+                open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+                open_tt.click()
+                logging.info('Clicked Table Tennis')
+                setkacup()
+
+            elif 2.9 < totalscores and zerostreshold < 25:
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                # bot.switch_to.default_content()
+
+            # Scroll market to center of page
+            desired_y = (clickmarket.size['height'] / 2) + clickmarket.location['y']
+            current_y = (bot.execute_script('return window.innerHeight') / 2) + bot.execute_script(
+                'return window.pageYOffset')
+            scroll_y_by = desired_y - current_y
+            bot.execute_script("window.scrollBy(0, arguments[0]);", scroll_y_by)
+            scroll = ActionChains(bot)
+            scroll.move_to_element(clickmarket).perform()
+            # clickmarket.click()
+            # logging.info('Market added to betslip')
+            # Go to place bet function
+            # placebet()
+
+            logging.info('Pro league Bet placed.......................!')
             bot.refresh()
             logging.info("Page refreshed")
             # Click on sports link
@@ -344,6 +969,7 @@ def ttcup():
             logging.info('Clicked Table Tennis')
             setkacup()
         else:
+
             logging.info('odds not favorable')
             logging.info('Going to the next game')
             # Click on sports link
@@ -357,7 +983,7 @@ def ttcup():
             logging.info('Clicked Table Tennis')
             setkacup()
     except NoSuchElementException:
-        logging.info('Over 3.5 Market not found. Going to next game -')
+        logging.info('Over 3.5 Market not found. Going to next game')
         # Click on sports link
         open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
         open_sports.click()
@@ -368,51 +994,89 @@ def ttcup():
         open_tt.click()
         logging.info('Clicked Table Tennis')
         setkacup()
-        logging.info('Clicked Table Tennis')
 
-
-# Setka Cup function
+# Setka Cup First Game function
 def setkacup():
+    # Click on sports link
+    open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+    open_sports.click()
+    logging.info('Clicked Sports')
+
+    # click on table tennis
+    open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+    open_tt.click()
+    logging.info('Clicked Table Tennis')
+
     # go to search to quit dropdown
     go_to_search = bot.find_element(by=By.CLASS_NAME, value=searchfield)
     go_to_search.click()
-    logging.info('Setka Cup Function')
+    logging.info('Clicked Search')
 
-    # select Pro League
     try:
-        # open_setkacup = bot.find_element(by=By.XPATH, value=setkacuplink)
-        open_setkacup = WebDriverWait(bot, 10).until(ec.presence_of_element_located((By.XPATH, setkacuplink)))
-    # open_pro_league = bot.find_element(by=By.XPATH, value="//a[@href='line/table-tennis/1197285-tt-cup']")
+        # open Pro League Tournament
+        open_setka_cup = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, setkacuplink)))
+        open_setka_cup.click()
     except:
-        open_setkacup = WebDriverWait(bot, 10).until(ec.presence_of_element_located((By.XPATH, setkacuplink)))
-    open_setkacup.click()
-    logging.info('This point: Setka Cup games')
+        logging.info("Setka Cup Tournament not found !!!!!!")
+        logging.info("Skipping to Pro League ..........................")
+        print("Setka Cup Tournament not found !!!!!!")
+        print("Skipping to Pro League..........................")
+        proleague()
+    logging.info('This Point')
 
-    # Select First game
-    first_setkacup = bot.find_element(by=By.XPATH, value="(//a[@data-liga='1733171'])[1]")
-    # first_pro_league_game = bot.find_element(by=By.XPATH, value="(//a[@data-liga='1197285'])[1]")
+    # Select Second game
+    first_setka_cup_gamexPath = "(//a[@data-liga='1733171'])[1]"
+    first_setka_cup_game = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, first_setka_cup_gamexPath)))
 
-    first_setkacup.click()
-    logging.info('First Pro league game opened')
+    first_setka_cup_game.click()
+    logging.info('First Setka cup game opened')
+    print('First Setka cup game opened')
 
-    league = bot.find_element(by=By.XPATH, value=leaguename)
-    # team1 = WebDriverWait(bot, 3).until(ec.visibility_of_element_located((By.XPATH, "/html/body/div[3]/div[1]/div[2]/div/div/div[3]/div/div/div/div[1]/div/div/div[1]/div/div/div[2]/div/div[1]/div/div[2]")))
+    # league = bot.find_element(by=By.XPATH, value=leaguename)
+    league = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, leaguename)))
 
-    # team1 = bot.find_element(by=By.XPATH, value="(//div[@class='team']//a)[1]")
-    # team2 = bot.find_element(by=By.XPATH, value="(//div[@class='team'])[2]")
-    # gametitle = team1.text + ' vs ' + team2.text
-    # gametime = bot.find_element(by=By.XPATH, value="(//div[@class='time']//div)[2]")
+    team1Xpath = "(//div[@class='team']//a)[1]"
+    team2Xpath = "(//div[@class='team'])[2]"
+    gametimeXpath = "(//div[@class='time']//div)[2]"
+    team1 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team1Xpath)))
+    team2 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team2Xpath)))
+    gametime = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, gametimeXpath)))
+
+    # Dictionary to hold game details
+    gamedetails = {}
+    gamedetails["team1"] = team1
+    gamedetails["team2"] = team2
+    gamedetails["gametime"] = gametime
+
+    # Check GameList if the game has been analysed before
+    if gamedetails in GamesList:
+        # Go to next game
+        logging.info("This game has been analysed already!!!!!")
+        logging.info("Skipping to the next game..............")
+        print("This game has been analysed already !!!!!")
+        print("Skipping to the next game..............")
+        # Click on sports link
+        open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+        open_sports.click()
+        logging.info('Clicked Sports')
+
+        # click on table tennis
+        open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+        open_tt.click()
+        logging.info('Clicked Table Tennis')
+        setkacup2()
+    else:
+        # Add Game details to the Bet list
+        GamesList.append(gamedetails)
+        logging.info("The game details have been added to the Analysed List")
+        print("The game details have been added to the analysed list")
+
     logging.info('League :' + league.text)
-    # logging.info('Game : ' + team1.text + ' - ' + team2.text)
-    # logging.info('Game Time : ' + gametime.text)
 
-    team1odds = WebDriverWait(bot, 2).until(ec.visibility_of_element_located((By.XPATH, teamoneodds)))
+    team1odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamoneodds)))
     logging.info('Team 1 odds:' + team1odds.text)
-    team2odds = WebDriverWait(bot, 1).until(ec.visibility_of_element_located((By.XPATH, teamtwoodds)))
+    team2odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamtwoodds)))
     logging.info('Team 2 odds:' + team2odds.text)
-    # team1odds = bot.find_element(by=By.XPATH, value="(//span[@class='koeff'])[1]")
-    # team2odds = bot.find_element(by=By.XPATH, value="(//span[@class='koeff'])[2]")
-    # logging.info('Team 1 odds:'+ team2odds.text)
 
     statsdropdown = bot.find_element(by=By.XPATH, value="(//button[@title='Statistics'])[1]")
     statslink = bot.find_element(by=By.XPATH, value="//button[@title='Statistics']//span[1]")
@@ -420,9 +1084,85 @@ def setkacup():
     try:
         clickmarket = bot.find_element(by=By.XPATH, value=market)
         if (float(team1odds.text) >= 1.28 and float(team2odds.text) >= 1.28):
+
             logging.info('Favorable bet found')
+
             statsdropdown.click()
             statslink.click()
+            logging.info('Stats link clicked')
+            # ObtainWindow handle for stats window
+            statswindow = bot.window_handles[1]
+            bot.switch_to.window(statswindow)
+            print("Stats window opened")
+
+            WebDriverWait(bot, 20).until(ec.frame_to_be_available_and_switch_to_it(
+                (By.XPATH, "//iframe[contains(@class,'st-portal st-integration__portal')]")))
+            h2hclick1 = WebDriverWait(bot, 20).until(
+                ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+
+            print("Accessed iframe and ready to collect statistics")
+            # Click head to head
+            get_title = bot.title
+            print("The title is : " + get_title)
+
+            h2hlink = bot.find_element(by=By.XPATH, value="/html/body/div/div/div/div/div[1]/div[2]/div[2]/a[2]")
+
+            try:
+                WebDriverWait(bot, 20).until(
+                    ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+                h2hclick1.click()
+                # Double click if the first click did not respond
+                action = ActionChains(bot)
+                action.double_click(h2hlink).perform()
+                h2hlink.click()
+            except:
+                h2hclick1.click()
+                h2hlink.click()
+                print("h2h link clicked twice")
+
+            print("toogle head to head opened")
+
+            scoresList = []
+            scores = WebDriverWait(bot, 20).until(
+                ec.presence_of_all_elements_located((By.CLASS_NAME, "st-score__value")))
+            # scores = bot.find_elements(by=By.CLASS_NAME, value="st-score__value")
+            for score in scores:
+                print("Score: " + score.text)
+                scoresList.append(score.text)
+            print("The scorelist is :")
+            print(scoresList)
+            logging.info(scoresList)
+
+            # Bet Analysis Variables
+            totalscores = len(scoresList)
+            zeros = scoresList.count('0')
+            zerostreshold = 100 * zeros / totalscores
+
+            if totalscores < 3:
+                print("Not enough statistics for analysis. The bot will proceed to the next league")
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                logging.info('odds not favorable')
+                logging.info('Going to the next game')
+                print('odds not favorable')
+                print('Going to the next game..')
+                # Click on sports link
+                open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+                open_sports.click()
+                logging.info('Clicked Sports')
+
+                # click on table tennis
+                open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+                open_tt.click()
+                logging.info('Clicked Table Tennis')
+                setkacup2()
+
+            elif 2.9 < totalscores and zerostreshold < 25:
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                # bot.switch_to.default_content()
 
             # Scroll market to center of page
             desired_y = (clickmarket.size['height'] / 2) + clickmarket.location['y']
@@ -434,9 +1174,10 @@ def setkacup():
             scroll.move_to_element(clickmarket).perform()
             # clickmarket.click()
             # logging.info('Market added to betslip')
+            # Go to place bet function
             # placebet()
 
-            logging.info('Setka cup Bet placed.......................!')
+            logging.info('Pro league Bet placed.......................!')
             bot.refresh()
             logging.info("Page refreshed")
             # Click on sports link
@@ -448,8 +1189,228 @@ def setkacup():
             open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
             open_tt.click()
             logging.info('Clicked Table Tennis')
-            ttcup()
+            setkacup2()
         else:
+
+            logging.info('odds not favorable')
+            logging.info('Going to the next game')
+            # Click on sports link
+            open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+            open_sports.click()
+            logging.info('Clicked Sports')
+
+            # click on table tennis
+            open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+            open_tt.click()
+            logging.info('Clicked Table Tennis')
+            setkacup2
+    except NoSuchElementException:
+        logging.info('Over 3.5 Market not found. Going to next game')
+        # Click on sports link
+        open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+        open_sports.click()
+        logging.info('Clicked Sports')
+
+        # click on table tennis
+        open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+        open_tt.click()
+        logging.info('Clicked Table Tennis')
+        setkacup2()
+
+def setkacup2():
+    # Click on sports link
+    open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+    open_sports.click()
+    logging.info('Clicked Sports')
+
+    # click on table tennis
+    open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+    open_tt.click()
+    logging.info('Clicked Table Tennis')
+
+    # go to search to quit dropdown
+    go_to_search = bot.find_element(by=By.CLASS_NAME, value=searchfield)
+    go_to_search.click()
+    logging.info('Clicked Search')
+
+    try:
+        # open Pro League Tournament
+        open_setkacup2 = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, setkacuplink)))
+        open_setkacup2.click()
+    except:
+        logging.info("Setka Cup Tournament not found !!!!!!")
+        logging.info("Skipping to Pro League..........................")
+        print("Setka Cup League Tournament not found !!!!!!")
+        print("Skipping to Pro League ..........................")
+        proleague()
+    logging.info('This Point')
+
+    # Select Second game
+    second_setka_cup_gamexPath = "(//a[@data-liga='1733171'])[2]"
+    second_setka_cup_game = WebDriverWait(bot, 30).until(ec.presence_of_element_located((By.XPATH, second_setka_cup_gamexPath)))
+
+    second_setka_cup_game.click()
+    logging.info('Second Pro league game opened')
+    print('Second Pro league game opened')
+
+    league = bot.find_element(by=By.XPATH, value=leaguename)
+
+    team1Xpath = "(//div[@class='team']//a)[1]"
+    team2Xpath = "(//div[@class='team'])[2]"
+    gametimeXpath = "(//div[@class='time']//div)[2]"
+    team1 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team1Xpath)))
+    team2 = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, team2Xpath)))
+    gametime = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, gametimeXpath)))
+
+    # Dictionary to hold game details
+    gamedetails = {}
+    gamedetails["team1"] = team1
+    gamedetails["team2"] = team2
+    gamedetails["gametime"] = gametime
+
+    # Check GameList if the game has been analysed before
+    if gamedetails in GamesList:
+        # Go to next game
+        logging.info("This game has been analysed already!!!!!")
+        logging.info("Skipping to the next game..............")
+        print("This game has been analysed already !!!!!")
+        print("Skipping to the next game..............")
+        # Click on sports link
+        open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+        open_sports.click()
+        logging.info('Clicked Sports')
+
+        # click on table tennis
+        open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+        open_tt.click()
+        logging.info('Clicked Table Tennis')
+        proleague()
+    else:
+        # Add Game details to the Bet list
+        GamesList.append(gamedetails)
+        logging.info("The game details have been added to the Analysed List")
+        print("The game details have been added to the analysed list")
+
+    logging.info('League :' + league.text)
+
+    team1odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamoneodds)))
+    logging.info('Team 1 odds:' + team1odds.text)
+    team2odds = WebDriverWait(bot, 10).until(ec.visibility_of_element_located((By.XPATH, teamtwoodds)))
+    logging.info('Team 2 odds:' + team2odds.text)
+
+    statsdropdown = bot.find_element(by=By.XPATH, value="(//button[@title='Statistics'])[1]")
+    statslink = bot.find_element(by=By.XPATH, value="//button[@title='Statistics']//span[1]")
+
+    try:
+        clickmarket = bot.find_element(by=By.XPATH, value=market)
+        if (float(team1odds.text) >= 1.28 and float(team2odds.text) >= 1.28):
+
+            logging.info('Favorable bet found')
+
+            statsdropdown.click()
+            statslink.click()
+            logging.info('Stats link clicked')
+            # ObtainWindow handle for stats window
+            statswindow = bot.window_handles[1]
+            bot.switch_to.window(statswindow)
+            print("Stats window opened")
+
+            WebDriverWait(bot, 20).until(ec.frame_to_be_available_and_switch_to_it(
+                (By.XPATH, "//iframe[contains(@class,'st-portal st-integration__portal')]")))
+            h2hclick1 = WebDriverWait(bot, 20).until(
+                ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+
+            print("Accessed iframe and ready to collect statistics")
+            # Click head to head
+            get_title = bot.title
+            print("The title is : " + get_title)
+
+            h2hlink = bot.find_element(by=By.XPATH, value="/html/body/div/div/div/div/div[1]/div[2]/div[2]/a[2]")
+
+            try:
+                WebDriverWait(bot, 20).until(
+                    ec.element_to_be_clickable((By.XPATH, "(//div[@class='st-switch__text'])[2]")))
+                h2hclick1.click()
+                # Double click if the first click did not respond
+                action = ActionChains(bot)
+                action.double_click(h2hlink).perform()
+                h2hlink.click()
+            except:
+                h2hclick1.click()
+                h2hlink.click()
+                print("h2h link clicked twice")
+
+            print("toogle head to head opened")
+
+            scoresList = []
+            scores = WebDriverWait(bot, 20).until(
+                ec.presence_of_all_elements_located((By.CLASS_NAME, "st-score__value")))
+            # scores = bot.find_elements(by=By.CLASS_NAME, value="st-score__value")
+            for score in scores:
+                print("Score: " + score.text)
+                scoresList.append(score.text)
+            print("The scorelist is :")
+            print(scoresList)
+            logging.info(scoresList)
+
+            # Bet Analysis Variables
+            totalscores = len(scoresList)
+            zeros = scoresList.count('0')
+            zerostreshold = 100 * zeros / totalscores
+
+            if totalscores < 3:
+                print("Not enough statistics for analysis. The bot will proceed to the next league")
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                logging.info('odds not favorable')
+                logging.info('Going to the next game')
+                print('odds not favorable')
+                print('Going to the next game')
+                # Click on sports link
+                open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+                open_sports.click()
+                logging.info('Clicked Sports')
+
+                # click on table tennis
+                open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+                open_tt.click()
+                logging.info('Clicked Table Tennis')
+                proleague()
+
+            elif 2.9 < totalscores and zerostreshold < 25:
+                scoresList.clear()
+                bot.close()
+                bot.switch_to.window(parent)
+                # bot.switch_to.default_content()
+
+            # Scroll market to center of page
+            desired_y = (clickmarket.size['height'] / 2) + clickmarket.location['y']
+            current_y = (bot.execute_script('return window.innerHeight') / 2) + bot.execute_script('return window.pageYOffset')
+            scroll_y_by = desired_y - current_y
+            bot.execute_script("window.scrollBy(0, arguments[0]);", scroll_y_by)
+            scroll = ActionChains(bot)
+            scroll.move_to_element(clickmarket).perform()
+            # clickmarket.click()
+            # logging.info('Market added to betslip')
+            # Go to place bet function
+            # placebet()
+
+            logging.info('Pro league Bet placed.......................!')
+            bot.refresh()
+            logging.info("Page refreshed")
+            # Click on sports link
+            open_sports = bot.find_element(by=By.LINK_TEXT, value=sports)
+            open_sports.click()
+            logging.info('Clicked Sports')
+
+            # click on table tennis
+            open_tt = bot.find_element(by=By.LINK_TEXT, value=tabletennis)
+            open_tt.click()
+            logging.info('Clicked Table Tennis')
+            proleague()
+        else:
+
             logging.info('odds not favorable')
             logging.info('Going to the next game')
             # Click on sports link
@@ -474,7 +1435,6 @@ def setkacup():
         open_tt.click()
         logging.info('Clicked Table Tennis')
         proleague()
-        logging.info('Clicked Table Tennis')
 
 
 # Start pro league
